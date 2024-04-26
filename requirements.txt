@@ -1,0 +1,12 @@
+
+pydantic~=1.10.7  # For configuration & Models
+pytest~=7.3.1
+pytest-xdist==3.3.1  # To run pytest in multiple threads
+selenium==4.10.0
+webdriver-manager==4.0.0  # To run Selenium locally
+python-keycloak==2.16.3
+Faker~=19.2.0
+httpx==0.23.2
+retry==0.9.2  # Retry decorators
+requests~=2.31.0
+fluent-logger==0.11.0
