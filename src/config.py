@@ -8,7 +8,7 @@ from enum import StrEnum, auto
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import BaseSettings, Field, AnyHttpUrl, validator, HttpUrl
+from pydantic import BaseSettings, Field, AnyHttpUrl, HttpUrl
 from pydantic.fields import ModelField
 
 
@@ -20,19 +20,18 @@ class Environment(StrEnum):
     ...
 
 
-AppUrl = HttpUrl | Literal["http://127.1.0.1"]
+AppUrl = HttpUrl | Literal["https://demo.mahara.org/"]
 
 
 class SeleniumTestsConfig(BaseSettings):
     """Main configuration."""
 
-    ENVIRONMENT: Environment = Field(default=Environment.development,
+    ENVIRONMENT: Environment = Field(default=Environment.local,
                                      description="Environment in which the tests will run")
-    LOCAL_URL: AnyHttpUrl = Field(default="http://127.1.0.1",
+    LOCAL_URL: AnyHttpUrl = Field(default="https://demo.mahara.org/",
                                   description="Local URL, will only be used when Environment is set as 'local'")
     APP_URL: AppUrl = Field(default=None, description="Base URL of the app to test.")
 
-    @validator("APP_URL", pre=True, check_fields=False)
     def gen_url_based_on_environment(cls, values: dict, field: ModelField):
         """Generate the URL based on the ENVIRONMENT value.
 
@@ -84,6 +83,38 @@ class SeleniumTestsConfig(BaseSettings):
             "of time to complete"
         ),
     )
+
+
+class PipelineMetaConfig(BaseSettings):
+    """Env vars extracted from Gitlab pipeline.
+
+    `Gitlab variables reference <https://docs.gitlab.com/ee/ci/variables/predefined_variables.html>`_
+    """
+
+    CI_COMMIT_SHA: str = Field(
+        default="local",
+        description="SHA of the commit to be used to create the test run name. Needs to be replaced with app's build hash"
+    )
+    CI_PIPELINE_ID: str = Field(default="local",
+                                description="Gitlab pipeline id to be used to create the test run name")
+    CI_COMMIT_BRANCH: str = Field(default="local", description="Gitlab commit branch name")
+    CI_PIPELINE_URL: str = Field(description="Link to the Gitlab pipeline")
+    PYTEST_ENVIRONMENT_SPECIFIC_COMMAND_ARGS: str = Field(
+        default="",  # This is the bypass - empty string will add nothing to the CLI args.
+        description=(
+            "Pytest CLI arguments which are specific to the environment, against which we run E2E. "
+            "You can use it for filtering tests. See ``.gitlab-ci.yml`` for more information"
+        ),
+        example="-m not skip_nightly",
+    )
+
+
+class UsersCredentialsConfig(BaseSettings):
+    """Configuration for MAHARA_USER_credential for login"""
+
+    # Configuration for MAHARA_USER_credential for login
+    MAHARA_DEMO_USER_USERNAME: str = Field(description="Username which is used for login Mahara")
+    MAHARA_DEMO_USER_PASSWORD: str = Field(description="Password which is used for login Mahara")
 
 
 @lru_cache
