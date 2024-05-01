@@ -10,12 +10,11 @@ from retry import retry
 from selenium.common.exceptions import InvalidSessionIdException
 from selenium.webdriver import Remote
 
-from src.logger import logger
-from src.config import get_selenium_config
+from src.config import get_selenium_config, PipelineMetaConfig
 from src.constants import SCREENSHOTS_FAILURES_FOLDER, SCREENSHOTS_FOLDER
 from src.driver_factories.driver_factory_base import DriverFactoryBase
 from src.driver_factories.factories_map import DRIVER_FACTORY_MAP
-from src.report.utils import delete_all_report_files
+from src.logger import logger
 from src.selenium_facade.driver_facade import DriverFacade
 from src.utils import load_dotenv_if_running_locally
 
@@ -39,8 +38,14 @@ def pytest_sessionstart():
     * Creates ``screenshots`` dir
     """
     load_dotenv_if_running_locally()
-    delete_all_report_files()
     _create_screenshot_folder()
+
+
+@pytest.fixture
+def _build_name() -> str:
+    """The build name to be used inside tests to distinguish different runs of tests."""
+    ci_cd_config = PipelineMetaConfig()
+    return f"{ci_cd_config.CI_COMMIT_BRANCH}_sha={ci_cd_config.CI_COMMIT_SHA[:8]}_pipeline={ci_cd_config.CI_PIPELINE_ID}"
 
 
 def pytest_runtest_call(item):
@@ -54,7 +59,8 @@ def pytest_runtest_call(item):
     if selenium_config.RETRY_NUMBER and selenium_config.SELENIUM_PROVIDER != "local":
         testfunction = item.obj
         # Add retry decorator for each test:
-        item.obj = retry(tries=selenium_config.RETRY_NUMBER, delay=selenium_config.DELAY_BETWEEN_RETRIES_S)(testfunction)
+        item.obj = retry(tries=selenium_config.RETRY_NUMBER, delay=selenium_config.DELAY_BETWEEN_RETRIES_S)(
+            testfunction)
 
 
 @pytest.fixture

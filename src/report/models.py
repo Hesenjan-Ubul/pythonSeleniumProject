@@ -3,8 +3,6 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from src.config import PipelineMetaConfig
-
 
 class RunModel(BaseModel):
     name: str
@@ -49,11 +47,3 @@ class ReportModel(BaseModel):
 
 
 IndexedReport = defaultdict[int, list[CaseModel]]
-
-
-class ReportSummary(BaseModel):
-    pipeline: PipelineMetaConfig
-    report_run: RunModel
-    indexed_report: IndexedReport
-    num_failed: int
-    num_total: int
