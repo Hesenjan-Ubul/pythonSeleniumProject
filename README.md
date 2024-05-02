@@ -1,6 +1,6 @@
 # Python Selenium Test Automation Framework
 
-This repository contains a test automation framework written in Python, using pytest, Selenium, and the Page Object Model (POM) for web page abstraction.
+This repository contains a test automation framework written in Python, using pytest, Selenium, and the Page Object Model (POM) for web page abstraction, targeting the Mahara.org web application as example Web App.
 
 ## Overview
 
